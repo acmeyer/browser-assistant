@@ -14,6 +14,14 @@ This is the main idea behind this extension. I wanted to build it in a way that 
 
 We're still far from this updated vision but I wanted to at least start building towards it. The result is this early stage extension. If you also want to see this vision become a reality, I'd love for you to help contribute to the project.
 
+## Demo
+
+
+
+https://github.com/acmeyer/browser-assistant/assets/852932/12e7f6dc-f1f7-484f-bb39-2cd46e974741
+
+
+
 ## How It Works
 
 There are two main components to this repository. The first is the browser extension in the [`/extension`](./extension/) directory. This directory hosts all of the browser extension's code. The second is the backend server in the [`/backend`](./backend/) directory. This directory hosts all of the code for the backend server that the extension uses.
