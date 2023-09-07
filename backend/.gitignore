@@ -64,3 +64,16 @@ node_modules/
 
 # dotenv environment variables file
 .env
+
+# Compiled JavaScript files
+dist/
+dist/**/*.js
+dist/**/*.js.map
+
+# TypeScript v1 declaration files
+typings/
+
+# Node.js dependency directory
+node_modules/
+
+google-service-account.json

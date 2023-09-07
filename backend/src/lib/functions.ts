@@ -2,9 +2,9 @@ import OpenAI from 'openai';
 import { ChatCompletionMessage } from 'openai/resources/chat';
 import { FUNCTION_NAMES } from './constants';
 import { db } from './firebase';
-import { searchInPinecone } from './pinecone';
-import { MessageOptions, PageContent, VectorMetadata } from '../types';
+import { MessageOptions, PageContent } from '../types';
 import { getSummary } from './summaries';
+import { createNote, getNotes } from './notes';
 
 export const functions: OpenAI.Chat.Completions.CompletionCreateParams.Function[] = [
   {
@@ -16,6 +16,18 @@ export const functions: OpenAI.Chat.Completions.CompletionCreateParams.Function[
         url: { type: 'string', description: 'URL of the page.' },
       },
       required: ['url'],
+    },
+  },
+  {
+    name: FUNCTION_NAMES.READ,
+    description: 'Reads the current page. Returns relevant text for provided query.',
+    parameters: {
+      type: 'object',
+      properties: {
+        url: { type: 'string', description: 'URL of the page.' },
+        query: { type: 'string', description: 'Query for relevant content.' },
+      },
+      required: ['url', 'query'],
     },
   },
   {
@@ -55,7 +67,7 @@ export const callFunction = async (
 };
 
 const summarize = async (url: string, pageContent?: PageContent): Promise<object> => {
-  const summary = await getSummary(pageContent);
+  const summary = await getSummary(url, pageContent);
   if (!summary) {
     return {
       success: false,
@@ -73,42 +85,6 @@ const summarize = async (url: string, pageContent?: PageContent): Promise<object
   return {
     success: true,
     summary,
-  };
-};
-
-const getNotes = async (text: string, url?: string): Promise<object> => {
-  const notes = await searchInPinecone(text, url);
-  const matchingNotes = notes.matches?.map((match) => {
-    const metadata = match.metadata as VectorMetadata;
-    return {
-      id: match.id,
-      url: metadata?.url,
-      text: metadata?.text,
-    };
-  });
-
-  return {
-    success: true,
-    notes: matchingNotes,
-  };
-};
-
-const createNote = async (text: string, url?: string): Promise<object> => {
-  const noteData = {
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    text,
-    url,
-  };
-
-  const noteRef = await db.collection('notes').add(noteData);
-
-  return {
-    success: true,
-    note: {
-      id: noteRef.id,
-      ...noteData,
-    },
   };
 };
 

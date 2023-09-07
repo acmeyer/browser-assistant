@@ -1,3 +1,6 @@
+import 'dotenv/config';
+import { TiktokenEncoding } from 'js-tiktoken';
+
 export const Config = {
   // OpenAI
   OPENAI_API_KEY: process.env.OPENAI_API_KEY as string,
@@ -23,4 +26,6 @@ export const Config = {
   // General
   ENVIRONMENT: process.env.ENVIRONMENT as string,
   API_BASE_URL: process.env.API_BASE_URL as string,
+  CHUNK_SIZE: 500,
+  EMBEDDING_MODEL: 'cl100k_base' as TiktokenEncoding,
 };
