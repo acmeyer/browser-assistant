@@ -26,7 +26,19 @@ export type CreateConversationData = {
   lastActivityAt: Date;
 };
 
-export type VectorMetadata = {
+export type NoteVectorMetadata = {
+  url?: string;
+  text?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+};
+
+export type SummaryVectorMetadata = {
+  url?: string;
+  summary?: string;
+};
+
+export type TextContentVectorMetadata = {
   url?: string;
   text?: string;
 };

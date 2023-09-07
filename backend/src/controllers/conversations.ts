@@ -1,11 +1,11 @@
 /* eslint-disable max-len */
 import { Request, Response } from 'express';
 import OpenAI from 'openai';
-import { ChatCompletionMessage } from 'openai/resources/chat';
+import { ChatCompletionMessage, CreateChatCompletionRequestMessage } from 'openai/resources/chat';
 import { Config } from '../lib/config';
 import { messageReducer } from '../lib/utils';
 import { Message, Conversation, MessageOptions } from '../types';
-import { callFunction, functions } from '../lib/functions';
+import { functions } from '../lib/functions';
 import { db } from '../lib/firebase';
 
 export const getLatestConversationController = async (_req: Request, res: Response) => {
@@ -103,7 +103,6 @@ const streamChatCompletion = async ({
   temperature,
   response,
   conversationRef,
-  options,
 }: {
   systemPrompt: ChatCompletionMessage;
   messages: ChatCompletionMessage[];
@@ -141,42 +140,50 @@ const streamChatCompletion = async ({
   ]);
 
   // handle function call
-  if (newAssistantMessage.function_call) {
-    const result = await callFunction(newAssistantMessage.function_call, options);
-    const newMessage = {
-      role: 'function' as const,
-      name: newAssistantMessage.function_call.name,
-      content: JSON.stringify(result),
-    };
-    response.write(JSON.stringify(newMessage));
-    messages.push(newMessage);
-    await Promise.all([
-      conversationRef.update({
-        lastActivityAt: new Date(),
-        updatedAt: new Date(),
-      }),
-      conversationRef.collection('messages').add({
-        ...newMessage,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }),
-    ]);
+  // if (newAssistantMessage.function_call) {
+  //   const result = await callFunction(newAssistantMessage.function_call, options);
+  //   const newMessage = {
+  //     role: 'function' as const,
+  //     name: newAssistantMessage.function_call.name,
+  //     content: JSON.stringify(result),
+  //   };
+  //   response.write(JSON.stringify(newMessage));
+  //   messages.push(newMessage);
+  //   await Promise.all([
+  //     conversationRef.update({
+  //       lastActivityAt: new Date(),
+  //       updatedAt: new Date(),
+  //     }),
+  //     conversationRef.collection('messages').add({
+  //       ...newMessage,
+  //       createdAt: new Date(),
+  //       updatedAt: new Date(),
+  //     }),
+  //   ]);
 
-    // Recursively call the function again, in order to get the next message from GPT
-    await streamChatCompletion({
-      systemPrompt,
-      messages,
-      functions,
-      temperature,
-      response,
-      conversationRef,
-      options,
-    });
-  }
+  //   // Recursively call the function again, in order to get the next message from GPT
+  //   await streamChatCompletion({
+  //     systemPrompt,
+  //     messages,
+  //     functions,
+  //     temperature,
+  //     response,
+  //     conversationRef,
+  //     options,
+  //   });
+  // }
 };
 
 export const createNewConversationMessageController = async (req: Request, res: Response) => {
-  const { conversationId, message, options } = req.body;
+  const {
+    conversationId,
+    message,
+    options,
+  }: {
+    conversationId: string;
+    message: Message;
+    options: MessageOptions;
+  } = req.body;
 
   // Get the conversation's messages
   const conversationRef = db.collection('conversations').doc(conversationId);
@@ -195,14 +202,16 @@ export const createNewConversationMessageController = async (req: Request, res: 
       content: doc.data().content,
     });
   });
-  const newMessage: ChatCompletionMessage = {
-    role: 'user',
-    content: message,
+  const newMessage: CreateChatCompletionRequestMessage = {
+    role: message.role,
+    content: message.content,
+    name: message.name,
   };
   messages.push(newMessage);
   await conversationRef.collection('messages').add({
     role: newMessage.role,
     content: newMessage.content,
+    name: newMessage.name,
     createdAt: new Date(),
     updatedAt: new Date(),
   });

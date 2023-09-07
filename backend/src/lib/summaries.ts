@@ -1,13 +1,11 @@
 import OpenAI from 'openai';
 import { Config } from './config';
-import { Readability, isProbablyReaderable } from '@mozilla/readability';
-import { JSDOM } from 'jsdom';
-import { PageContent } from '../types';
+import { PageContent, SummaryVectorMetadata } from '../types';
 import { encodingForModel, TiktokenModel } from 'js-tiktoken';
 import { TokenTextSplitter } from 'langchain/text_splitter';
-
-// Summary model has 16k tokens limit, leave some room for the prompt
-const MAX_TOKENS = 15000;
+import { saveInPinecone, searchInPinecone } from './pinecone';
+import { getUrlText } from './read';
+import { PINECONE_NAMESPACES } from './constants';
 
 const getCompletion = async ({ text }: { text: string }) => {
   const openai = new OpenAI({
@@ -32,20 +30,22 @@ const getCompletion = async ({ text }: { text: string }) => {
   return completion.choices[0].message.content;
 };
 
-const getSummaryCompletion = async ({ text }: { text: string }) => {
+const getSummaryCompletion = async ({ url, text }: { url: string; text: string }) => {
   // Measure the number of tokens for the text
   const encoding = encodingForModel(Config.SUMMARY_MODEL as TiktokenModel);
   const encodedText = encoding.encode(text);
   const numTokens = encodedText.length;
 
-  if (numTokens <= MAX_TOKENS) {
-    return await getCompletion({ text });
+  if (numTokens <= Config.CHUNK_SIZE) {
+    const summary = await getCompletion({ text });
+    await saveInPinecone(PINECONE_NAMESPACES.SUMMARIES, text, { url, summary });
+    return summary;
   }
 
   // If the text is too long, split it into chunks and summarize each chunk
   const splitter = new TokenTextSplitter({
-    encodingName: 'cl100k_base',
-    chunkSize: MAX_TOKENS,
+    encodingName: Config.EMBEDDING_MODEL,
+    chunkSize: Config.CHUNK_SIZE,
     chunkOverlap: 0,
   });
 
@@ -53,30 +53,38 @@ const getSummaryCompletion = async ({ text }: { text: string }) => {
 
   const summaries = [];
   for (const doc of output) {
-    const summary = await getCompletion({
-      text: doc.pageContent,
-    });
+    const [summary] = await Promise.all([
+      getCompletion({ text: doc.pageContent }),
+      saveInPinecone(PINECONE_NAMESPACES.TEXT_CONTENTS, doc.pageContent, {
+        url,
+        text: doc.pageContent,
+      }),
+    ]);
     summaries.push(summary);
   }
 
-  return getCompletion({ text: summaries.join('\n') });
+  const summary = await getCompletion({ text: summaries.join('\n') });
+  await saveInPinecone(PINECONE_NAMESPACES.SUMMARIES, text, { url, summary });
+  return summary;
 };
 
-const getUrlText = async (htmlString: string) => {
-  const { document } = new JSDOM(htmlString).window;
-
-  if (!isProbablyReaderable(document)) {
-    const article = new Readability(document).parse();
-    if (article?.textContent) {
-      return article.textContent;
-    }
-    return document.body.textContent;
+export const getSummary = async (
+  url: string,
+  pageContent?: PageContent
+): Promise<string | null> => {
+  const results = await searchInPinecone(
+    PINECONE_NAMESPACES.SUMMARIES,
+    pageContent?.textContent || pageContent?.content || '',
+    {
+      url: { $eq: url },
+    },
+    1
+  );
+  if (results.matches && results.matches.length > 0) {
+    const metadata = results.matches[0].metadata as SummaryVectorMetadata;
+    return metadata.summary || null;
   }
 
-  return document.body.textContent;
-};
-
-export const getSummary = async (pageContent?: PageContent): Promise<string | null> => {
   if (!pageContent) {
     return null;
   }
@@ -92,6 +100,6 @@ export const getSummary = async (pageContent?: PageContent): Promise<string | nu
   if (!text) {
     return null;
   }
-  const summary = await getSummaryCompletion({ text });
+  const summary = await getSummaryCompletion({ url, text });
   return summary;
 };

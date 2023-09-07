@@ -1,6 +1,7 @@
 import { PineconeClient, QueryRequest } from '@pinecone-database/pinecone';
 import { Config } from './config';
 import OpenAI from 'openai';
+import { v4 as uuidv4 } from 'uuid';
 
 export const pinecone = new PineconeClient();
 
@@ -17,7 +18,7 @@ export const getEmbedding = async (text: string) => {
   return embedding.data[0].embedding;
 };
 
-export const saveInPinecone = async (noteId: string, text: string, url?: string) => {
+export const saveInPinecone = async (namespace: string, text: string, metadata: object) => {
   await pinecone.init({
     environment: Config.PINECONE_ENVIRONMENT,
     apiKey: Config.PINECONE_API_KEY,
@@ -30,7 +31,7 @@ export const saveInPinecone = async (noteId: string, text: string, url?: string)
         name: Config.PINECONE_INDEX_NAME,
         dimension: Config.EMBEDDING_DIMENSION,
         metadataConfig: {
-          indexed: ['url'],
+          indexed: ['url'], // TODO: index user ids too
         },
       },
     });
@@ -41,41 +42,38 @@ export const saveInPinecone = async (noteId: string, text: string, url?: string)
   const upsertRequest = {
     vectors: [
       {
-        id: noteId,
+        id: uuidv4(),
         values: embedding,
-        metadata: {
-          url,
-          text,
-        },
+        metadata,
       },
     ],
-    namespace: 'user-1',
+    namespace,
   };
   const upsertResponse = await index.upsert({ upsertRequest });
   return upsertResponse;
 };
 
-export const searchInPinecone = async (text: string, url?: string) => {
+export const searchInPinecone = async (
+  namespace: string,
+  query: string,
+  metadataFilters?: QueryRequest['filter'],
+  results = 3
+) => {
   await pinecone.init({
     environment: Config.PINECONE_ENVIRONMENT,
     apiKey: Config.PINECONE_API_KEY,
   });
 
   const index = pinecone.Index(Config.PINECONE_INDEX_NAME);
-  const embedding = await getEmbedding(text);
+  const embedding = await getEmbedding(query);
   const queryRequest: QueryRequest = {
     vector: embedding,
-    topK: 5,
+    topK: results,
     includeValues: true,
     includeMetadata: true,
-    namespace: 'user-1',
+    namespace,
+    filter: metadataFilters,
   };
-  // Add filter if url is provided
-  if (url) {
-    queryRequest['filter'] = {
-      url: { $eq: url },
-    };
-  }
   const queryResponse = await index.query({ queryRequest });
   return queryResponse;
 };
