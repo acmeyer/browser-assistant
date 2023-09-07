@@ -1,6 +1,7 @@
 import { ButtonScrollToBottom } from '@pages/sidepanel/ButtonScrollToBottom';
 import { MessageInput } from '@pages/sidepanel/MessageInput';
-import { PageContent } from '@/lib/types';
+import { Message, PageContent } from '@/lib/types';
+import { nanoid } from '@/lib/nanoid';
 
 type MessageBarContainerProps = {
   chatBodyRef: React.RefObject<HTMLDivElement>;
@@ -9,7 +10,7 @@ type MessageBarContainerProps = {
   isAssistantResponding: boolean;
   input: string;
   setInput: (input: string) => void;
-  addMessage: (message: string, options?: object) => Promise<void>;
+  addMessage: (message: Message, options?: object) => Promise<void>;
   getPageContent: () => Promise<PageContent | undefined>;
   currentUrl?: string;
 };
@@ -33,7 +34,14 @@ export const MessageBarContainer = ({
           <MessageInput
             onSubmit={async (value) => {
               const pageContent = await getPageContent();
-              await addMessage(value, { url: currentUrl, pageContent });
+              const message = {
+                id: nanoid(),
+                role: 'user',
+                content: value,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+              } as Message;
+              await addMessage(message, { url: currentUrl, pageContent });
             }}
             input={input}
             setInput={setInput}

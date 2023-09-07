@@ -14,8 +14,8 @@ export function ChatFunctionCall({ message, isLoading = true, ...props }: ChatFu
     const functionName = message?.function_call?.name || message?.name || '';
 
     switch (functionName) {
-      case FUNCTION_NAMES.MODIFY_WEBPAGE:
-        return isLoading ? 'Updating the web page...' : 'Updated the web page.';
+      case FUNCTION_NAMES.READ:
+        return isLoading ? 'Reading the page...' : 'Finished reading the page.';
       case FUNCTION_NAMES.SUMMARIZE:
         return isLoading ? 'Generating a summary...' : 'Generated a summary.';
       case FUNCTION_NAMES.NOTES:
