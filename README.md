@@ -14,13 +14,6 @@ This is the main idea behind this extension. I wanted to build it in a way that 
 
 We're still far from this updated vision but I wanted to at least start building towards it. The result is this early stage extension. If you also want to see this vision become a reality, I'd love for you to help contribute to the project.
 
-## Demo
-
-
-
-https://github.com/acmeyer/browser-assistant/assets/852932/12e7f6dc-f1f7-484f-bb39-2cd46e974741
-
-
 
 ## How It Works
 
@@ -54,27 +47,17 @@ To install the extension locally, follow [this guide](https://developer.chrome.c
 
 ### Backend Server
 
-The backend server uses [Google's Firebase](https://firebase.google.com/) and is written in Typescript. 
+The backend server is a standard Nodejs Express app and is written in Typescript. It also uses [Firestore](https://firebase.google.com/docs/firestore) and [Pinecone](https://www.pinecone.io/) database for storage.
+
+You need to set the environment variables in `backend/.env`. You can copy `backend/example.env` for required variables.
 
 To run the server locally:
 
 ```bash
-cd backend/api
-yarn install
-firebase emulators:start --only functions,firestore
-# In a separate terminal
-cd backend/api
-yarn build:watch
-```
-
-To deploy the server:
-
-```bash
 cd backend
-firebase deploy --only functions
+yarn install
+yarn start
 ```
-
-You will need to have install the [Firebase CLI](https://firebase.google.com/docs/cli) locally to run the above. In addition, you need to set the environment variables in `backend/api/.env`. You can copy `backend/api/example.env` for required variables.
 
 ## Improvements to make
 
