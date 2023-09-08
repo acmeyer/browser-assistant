@@ -2,12 +2,24 @@ import { FUNCTION_NAMES } from './constants';
 import { FunctionCall, PageContent } from './types';
 import { Config } from './config';
 
+type FunctionCallResult = {
+  success: boolean;
+  error?: Error | string | unknown;
+  script?: string;
+  summary?: string;
+  text?: string;
+  url?: string;
+};
+
 export const handleFunctionCall = async (
   functionCall: FunctionCall,
   options?: PageContent
-): Promise<unknown> => {
+): Promise<FunctionCallResult> => {
   const args = JSON.parse(functionCall.arguments);
   switch (functionCall.name) {
+    case FUNCTION_NAMES.INJECT_SCRIPT:
+      return await injectScript(args['function']);
+
     case FUNCTION_NAMES.SUMMARIZE:
       return await summarize(args['url'], options);
 
@@ -22,7 +34,16 @@ export const handleFunctionCall = async (
   }
 };
 
-const summarize = async (url: string, pageContent?: PageContent): Promise<object> => {
+const injectScript = async (func: string): Promise<FunctionCallResult> => {
+  console.log('injecting script', func);
+
+  return {
+    success: true,
+    script: func,
+  };
+};
+
+const summarize = async (url: string, pageContent?: PageContent): Promise<FunctionCallResult> => {
   try {
     const response = await fetch(`${Config.API_BASE_URL}/summarize`, {
       method: 'POST',
@@ -53,7 +74,7 @@ const read = async (
   query?: string,
   code = false,
   pageContent?: PageContent
-): Promise<object> => {
+): Promise<FunctionCallResult> => {
   try {
     const response = await fetch(`${Config.API_BASE_URL}/read`, {
       method: 'POST',
@@ -81,7 +102,7 @@ const read = async (
   }
 };
 
-const createNote = async (text: string, url?: string): Promise<object> => {
+const createNote = async (text: string, url?: string): Promise<FunctionCallResult> => {
   try {
     const response = await fetch(`${Config.API_BASE_URL}/notes`, {
       method: 'POST',
@@ -107,7 +128,7 @@ const createNote = async (text: string, url?: string): Promise<object> => {
   }
 };
 
-const searchNotes = async (text: string, url?: string): Promise<object> => {
+const searchNotes = async (text: string, url?: string): Promise<FunctionCallResult> => {
   try {
     const response = await fetch(`${Config.API_BASE_URL}/notes/search`, {
       method: 'POST',
@@ -133,7 +154,11 @@ const searchNotes = async (text: string, url?: string): Promise<object> => {
   }
 };
 
-const useNotes = async (action: string, text: string, url?: string): Promise<object> => {
+const useNotes = async (
+  action: string,
+  text: string,
+  url?: string
+): Promise<FunctionCallResult> => {
   switch (action) {
     case 'create':
       return await createNote(text, url);

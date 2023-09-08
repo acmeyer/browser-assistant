@@ -38,7 +38,7 @@ export function ChatProvider({ children }: ChatProviderProps) {
   const [error, setError] = useState<Error | unknown | undefined>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isAssistantResponding, setIsAssistantResponding] = useState<boolean>(false);
-  const { getPageContent } = useChrome();
+  const { getPageContent, injectScript } = useChrome();
 
   const fetchConversation = async () => {
     let conversation: Conversation | undefined;
@@ -170,6 +170,11 @@ export function ChatProvider({ children }: ChatProviderProps) {
           if (finalResult && finalResult.function_call) {
             const pageContent = await getPageContent();
             const functionResult = await handleFunctionCall(finalResult.function_call, pageContent);
+            if (functionResult.script) {
+              // Inject the script into the page
+              await injectScript(functionResult.script);
+              functionResult.script = undefined;
+            }
             if (functionResult) {
               const newFunctionMessage = {
                 role: 'function' as const,

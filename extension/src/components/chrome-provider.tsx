@@ -11,10 +11,12 @@ type ChromeProviderState = {
   selectedText?: string;
   activeTab?: chrome.tabs.Tab;
   getPageContent: () => Promise<PageContent | undefined>;
+  injectScript: (func: string) => Promise<void>;
 };
 
 const initialState: ChromeProviderState = {
   getPageContent: async () => undefined,
+  injectScript: async () => undefined,
 };
 
 const ChromeProviderContext = createContext<ChromeProviderState>(initialState);
@@ -71,12 +73,21 @@ export function ChromeProvider({ children }: ChromeProviderProps) {
     return content[0]?.result;
   };
 
+  const injectScript = async (func: string) => {
+    chrome.scripting.executeScript({
+      target: { tabId: activeTab?.id || 0 },
+      func: eval(func),
+    });
+    return;
+  };
+
   return (
     <ChromeProviderContext.Provider
       value={{
         currentUrl: url,
         activeTab,
         getPageContent: getContent,
+        injectScript,
       }}
     >
       {children}

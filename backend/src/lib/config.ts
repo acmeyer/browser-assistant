@@ -5,7 +5,7 @@ export const Config = {
   // OpenAI
   OPENAI_API_KEY: process.env.OPENAI_API_KEY as string,
   OPENAI_API_ORG_ID: process.env.OPENAI_API_ORG_ID as string,
-  CHAT_MODEL: process.env.LONG_CONTEXT_CHAT_MODEL as string,
+  CHAT_MODEL: process.env.PREMIUM_CHAT_MODEL as string,
   FREE_CHAT_MODEL: process.env.FREE_CHAT_MODEL as string,
   LONG_CONTEXT_CHAT_MODEL: process.env.LONG_CONTEXT_CHAT_MODEL as string,
   PREMIUM_CHAT_MODEL: process.env.PREMIUM_CHAT_MODEL as string,

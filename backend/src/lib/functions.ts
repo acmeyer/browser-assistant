@@ -9,6 +9,21 @@ import { createNote, getNotes } from './notes';
 
 export const functions: OpenAI.Chat.Completions.CompletionCreateParams.Function[] = [
   {
+    name: FUNCTION_NAMES.INJECT_SCRIPT,
+    description: 'Injects a script into the page.',
+    parameters: {
+      type: 'object',
+      properties: {
+        function: {
+          type: 'string',
+          description:
+            'Function to run on the page. Please write it as a javascript function that can be called',
+        },
+      },
+      required: ['function'],
+    },
+  },
+  {
     name: FUNCTION_NAMES.SUMMARIZE,
     description: 'Summarizes a given URL.',
     parameters: {
