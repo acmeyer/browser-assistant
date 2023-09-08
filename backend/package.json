@@ -25,8 +25,7 @@
     "langchain": "^0.0.143",
     "morgan": "^1.10.0",
     "openai": "^4.3.1",
-    "uuid": "^9.0.0",
-    "typescript": "^5.2.2"
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "@types/compression": "^1.7.2",
@@ -39,7 +38,8 @@
     "eslint-config-google": "^0.14.0",
     "eslint-plugin-import": "^2.25.4",
     "firebase-functions-test": "^3.1.0",
-    "ts-node-dev": "^2.0.0"
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.2.2"
   },
   "private": true
 }
