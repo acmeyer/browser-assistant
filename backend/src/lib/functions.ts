@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import OpenAI from 'openai';
 import { ChatCompletionMessage } from 'openai/resources/chat';
 import { FUNCTION_NAMES } from './constants';
@@ -20,11 +21,16 @@ export const functions: OpenAI.Chat.Completions.CompletionCreateParams.Function[
   },
   {
     name: FUNCTION_NAMES.READ,
-    description: 'Reads the current page. Returns relevant text for provided query.',
+    description:
+      'Reads the current page. Helpful if you need to get more text from the page then just a summary. Returns relevant sections of the page for provided query.',
     parameters: {
       type: 'object',
       properties: {
         url: { type: 'string', description: 'URL of the page.' },
+        code: {
+          type: 'boolean',
+          description: 'Whether return code rather than text. Defaults to false.',
+        },
         query: { type: 'string', description: 'Query for relevant content.' },
       },
       required: ['url', 'query'],

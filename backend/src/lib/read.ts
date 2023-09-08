@@ -1,7 +1,7 @@
 import { Readability, isProbablyReaderable } from '@mozilla/readability';
 import { JSDOM } from 'jsdom';
 import { Config } from './config';
-import { TokenTextSplitter } from 'langchain/text_splitter';
+import { TokenTextSplitter, RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
 import { saveInPinecone, searchInPinecone } from './pinecone';
 import { PINECONE_NAMESPACES } from './constants';
 import { PageContent, TextContentVectorMetadata } from '../types';
@@ -20,19 +20,33 @@ export const getUrlText = async (htmlString: string) => {
   return document.body.textContent;
 };
 
-const saveTextContents = async ({ url, text }: { url: string; text: string }) => {
+const saveTextContents = async ({
+  url,
+  text,
+  isCode,
+}: {
+  url: string;
+  text: string;
+  isCode: boolean;
+}) => {
   // If the text is too long, split it into chunks and summarize each chunk
-  const splitter = new TokenTextSplitter({
-    encodingName: 'cl100k_base',
-    chunkSize: Config.CHUNK_SIZE,
-    chunkOverlap: 0,
-  });
+  const splitter = isCode
+    ? RecursiveCharacterTextSplitter.fromLanguage('html', {
+        chunkSize: Config.CHUNK_SIZE,
+        chunkOverlap: 0,
+      })
+    : new TokenTextSplitter({
+        encodingName: Config.EMBEDDING_MODEL,
+        chunkSize: Config.CHUNK_SIZE,
+        chunkOverlap: 0,
+      });
 
   const output = await splitter.createDocuments([text]);
   for (const doc of output) {
     await saveInPinecone(PINECONE_NAMESPACES.TEXT_CONTENTS, doc.pageContent, {
       url,
       text: doc.pageContent,
+      isCode,
     });
   }
 
@@ -42,22 +56,20 @@ const saveTextContents = async ({ url, text }: { url: string; text: string }) =>
 export const readContents = async (
   url: string,
   query?: string,
+  code = false,
   pageContent?: PageContent
 ): Promise<object[] | null> => {
   if (!query && !pageContent) {
     return null;
   }
 
-  if (query) {
-    return getContentsForQuery(url, query, pageContent);
-  }
-
-  return null;
+  return getContentsForQuery(url, query, code, pageContent);
 };
 
 const getContentsForQuery = async (
   url: string,
-  query: string,
+  query = '',
+  code = false,
   pageContent?: PageContent
 ): Promise<object[] | null> => {
   const results = await searchInPinecone(
@@ -65,6 +77,7 @@ const getContentsForQuery = async (
     query,
     {
       url: { $eq: url },
+      isCode: { $eq: code },
     },
     3
   );
@@ -75,9 +88,9 @@ const getContentsForQuery = async (
     }
     let text;
     if (pageContent.content) {
-      text = await getUrlText(pageContent.content);
+      text = code ? pageContent.content : await getUrlText(pageContent.content);
       text = text?.replace(/\n/g, ' ');
-    } else if (pageContent.textContent) {
+    } else if (pageContent.textContent && !code) {
       text = pageContent.textContent.replace(/\n/g, ' ');
     } else {
       return null;
@@ -86,8 +99,8 @@ const getContentsForQuery = async (
       return null;
     }
 
-    await saveTextContents({ url, text });
-    return getContentsForQuery(url, query, pageContent);
+    await saveTextContents({ url, text, isCode: code });
+    return getContentsForQuery(url, query, code, pageContent);
   }
 
   const matchingContents = results.matches?.map((match) => {

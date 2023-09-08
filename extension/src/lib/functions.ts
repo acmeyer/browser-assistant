@@ -12,7 +12,7 @@ export const handleFunctionCall = async (
       return await summarize(args['url'], options);
 
     case FUNCTION_NAMES.READ:
-      return await read(args['url'], args['query'], options);
+      return await read(args['url'], args['query'], args['code'], options);
 
     case FUNCTION_NAMES.NOTES:
       return await useNotes(args['action'], args['text'], args['url']);
@@ -48,7 +48,12 @@ const summarize = async (url: string, pageContent?: PageContent): Promise<object
   }
 };
 
-const read = async (url: string, query?: string, pageContent?: PageContent): Promise<object> => {
+const read = async (
+  url: string,
+  query?: string,
+  code = false,
+  pageContent?: PageContent
+): Promise<object> => {
   try {
     const response = await fetch(`${Config.API_BASE_URL}/read`, {
       method: 'POST',
@@ -58,6 +63,7 @@ const read = async (url: string, query?: string, pageContent?: PageContent): Pro
       body: JSON.stringify({
         url,
         query,
+        code,
         pageContent,
       }),
     });

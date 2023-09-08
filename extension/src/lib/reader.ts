@@ -55,7 +55,7 @@ export const getPageContent = () => {
     const customContent: PageContent = {
       title: document.title,
       ...getPageMeta(),
-      // content: document.body.innerHTML,
+      content: document.body.innerHTML,
       textContent: document.body.innerText,
     };
 

@@ -74,7 +74,7 @@ export const getSummary = async (
 ): Promise<string | null> => {
   const results = await searchInPinecone(
     PINECONE_NAMESPACES.SUMMARIES,
-    pageContent?.textContent || pageContent?.content || '',
+    '',
     {
       url: { $eq: url },
     },
