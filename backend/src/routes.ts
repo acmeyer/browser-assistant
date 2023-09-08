@@ -10,6 +10,10 @@ import { createNewNoteController, searchNotesController } from './controllers/no
 
 const router = express.Router();
 
+router.get('/health-check', (req, res) => {
+  res.send('OK');
+});
+
 router.post('/messages/new', createNewConversationMessageController);
 router.get('/conversations/latest', getLatestConversationController);
 router.post('/conversations/new', createConversationController);
