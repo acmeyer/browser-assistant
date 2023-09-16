@@ -26,6 +26,6 @@ export const Config = {
   // General
   ENVIRONMENT: process.env.ENVIRONMENT as string,
   API_BASE_URL: process.env.API_BASE_URL as string,
-  CHUNK_SIZE: 500,
+  CHUNK_SIZE: 3500,
   EMBEDDING_MODEL: 'cl100k_base' as TiktokenEncoding,
 };
