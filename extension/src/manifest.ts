@@ -31,6 +31,10 @@ const manifest = {
       resources: ['icon-128.png', 'icon-34.png'],
       matches: [],
     },
+    {
+      resources: ['src/lib/bootstrap.js'],
+      matches: ['<all_urls>'],
+    },
   ],
   commands: {
     _execute_action: {

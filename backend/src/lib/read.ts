@@ -12,10 +12,8 @@ export const getUrlText = async (htmlString: string) => {
   if (isProbablyReaderable(document)) {
     const article = new Readability(document).parse();
     if (article?.textContent) {
-      console.log('using readability text', article.textContent);
       return article.textContent;
     }
-    console.log('using body text', document.body.textContent);
     return document.body.textContent;
   }
   return document.body.textContent;

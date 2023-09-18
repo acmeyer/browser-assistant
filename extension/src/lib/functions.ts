@@ -76,7 +76,6 @@ const read = async (
   pageContent?: PageContent
 ): Promise<FunctionCallResult> => {
   try {
-    console.log('reading page', url, query, code, pageContent);
     const response = await fetch(`${Config.API_BASE_URL}/read`, {
       method: 'POST',
       headers: {

@@ -4,7 +4,7 @@ import { type ChatProviderState } from '@/components/chat-provider';
 
 const exampleMessages = [
   {
-    heading: 'Explain a concepts',
+    heading: 'Explain a concept',
     message: `What is this web page about?`,
   },
   {

@@ -32,10 +32,13 @@ export default defineConfig({
         newtab: resolve(pagesDir, 'newtab', 'index.html'),
         sidepanel: resolve(pagesDir, 'sidepanel', 'index.html'),
         reader: resolve(root, 'lib', 'reader.ts'),
+        bootstrap: resolve(root, 'lib', 'bootstrap.ts'),
       },
       output: {
         entryFileNames: (chunk) =>
-          chunk.name === 'reader' ? `src/lib/${chunk.name}.js` : `src/pages/${chunk.name}/index.js`,
+          chunk.name === 'reader' || chunk.name === 'bootstrap'
+            ? `src/lib/${chunk.name}.js`
+            : `src/pages/${chunk.name}/index.js`,
       },
     },
   },
