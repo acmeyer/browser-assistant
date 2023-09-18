@@ -12,6 +12,8 @@ const getCompletion = async ({ text }: { text: string }) => {
     apiKey: Config.OPENAI_API_KEY,
   });
 
+  console.log('getting summary completion for:', text);
+
   const completion = await openai.chat.completions.create({
     model: Config.SUMMARY_MODEL,
     messages: [
@@ -21,7 +23,7 @@ const getCompletion = async ({ text }: { text: string }) => {
       },
       {
         role: 'user',
-        content: `Please summarize the following text:\n\n${text}`,
+        content: `Please summarize the following text in one or two paragraphs:\n\n${text}`,
       },
     ],
     temperature: 0,

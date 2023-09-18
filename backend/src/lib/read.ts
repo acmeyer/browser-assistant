@@ -9,18 +9,19 @@ import { PageContent, TextContentVectorMetadata } from '../types';
 export const getUrlText = async (htmlString: string) => {
   const { document } = new JSDOM(htmlString).window;
 
-  if (!isProbablyReaderable(document)) {
+  if (isProbablyReaderable(document)) {
     const article = new Readability(document).parse();
     if (article?.textContent) {
+      console.log('using readability text', article.textContent);
       return article.textContent;
     }
+    console.log('using body text', document.body.textContent);
     return document.body.textContent;
   }
-
   return document.body.textContent;
 };
 
-const saveTextContents = async ({
+const saveContents = async ({
   url,
   text,
   isCode,
@@ -32,7 +33,7 @@ const saveTextContents = async ({
   // If the text is too long, split it into chunks and summarize each chunk
   const splitter = isCode
     ? RecursiveCharacterTextSplitter.fromLanguage('html', {
-        chunkSize: Config.CHUNK_SIZE,
+        chunkSize: Config.CODE_CHUNK_SIZE,
         chunkOverlap: 0,
       })
     : new TokenTextSplitter({
@@ -99,7 +100,7 @@ const getContentsForQuery = async (
       return null;
     }
 
-    await saveTextContents({ url, text, isCode: code });
+    await saveContents({ url, text, isCode: code });
     return getContentsForQuery(url, query, code, pageContent);
   }
 

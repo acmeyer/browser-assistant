@@ -74,10 +74,7 @@ export function ChromeProvider({ children }: ChromeProviderProps) {
   };
 
   const injectScript = async (func: string) => {
-    chrome.scripting.executeScript({
-      target: { tabId: activeTab?.id || 0 },
-      func: eval(func),
-    });
+    chrome.tabs.sendMessage(activeTab?.id || 0, { action: 'injectScript', func });
     return;
   };
 

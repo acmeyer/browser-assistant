@@ -17,7 +17,7 @@ export const functions: OpenAI.Chat.Completions.CompletionCreateParams.Function[
         function: {
           type: 'string',
           description:
-            'Function to run on the page. Please write it as a javascript function that can be called',
+            'Function to run on the page. Please write it as valid javascript function that is escaped because it will be parsed using JSON.parse.',
         },
       },
       required: ['function'],
@@ -37,7 +37,7 @@ export const functions: OpenAI.Chat.Completions.CompletionCreateParams.Function[
   {
     name: FUNCTION_NAMES.READ,
     description:
-      'Reads the current page. Helpful if you need to get more text from the page then just a summary. Returns relevant sections of the page for provided query.',
+      'Reads the current page. Helpful if you need to get more text from the page then just a summary or code from the page to understand its structure. Returns relevant sections of text or code for provided query.',
     parameters: {
       type: 'object',
       properties: {

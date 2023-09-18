@@ -4,16 +4,20 @@ import { type ChatProviderState } from '@/components/chat-provider';
 
 const exampleMessages = [
   {
-    heading: 'Explain technical concepts',
-    message: `What is a "serverless function"?`,
+    heading: 'Explain a concepts',
+    message: `What is this web page about?`,
   },
   {
-    heading: 'Summarize an article',
-    message: 'Summarize the following article for a 2nd grader: \n',
+    heading: 'Summarize the current web page',
+    message: 'Can you summarize the page I am currently on?',
   },
   {
-    heading: 'Draft an email',
-    message: `Draft an email to my boss about the following: \n`,
+    heading: 'Add content to a page',
+    message: `Can you add a button to this page that says "Click me"?`,
+  },
+  {
+    heading: 'Restyle a page',
+    message: 'Can you update this page to use a dark theme?',
   },
 ];
 
