@@ -2,7 +2,7 @@
 
 Browser Assistant is a browser extension that brings OpenAI's GPT to your browser.
 
-> Note: This is a work in progress. The extension has not been completed or published.
+> Note: This is a work in progress. The extension has not been completed or published. Not even sure if some of these concepts are possible. Highly experimental, use at your own risk.
 
 ## The Idea Behind It
 
@@ -14,6 +14,7 @@ This is the main idea behind this extension. I wanted to build it in a way that 
 
 We're still far from this updated vision but I wanted to at least start building towards it. The result is this early stage extension. If you also want to see this vision become a reality, I'd love for you to help contribute to the project.
 
+Further ideas about this [here](https://open.substack.com/pub/maximumtinkering/p/the-hyper-personalization-of-the?r=kp9g&utm_campaign=post&utm_medium=web), if interested in the concept.
 
 ## How It Works
 
